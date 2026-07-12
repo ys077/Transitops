@@ -1,22 +1,33 @@
 import express from 'express';
-import tripsRouter from './modules/trips/trips.routes';
-import maintenanceRouter from './modules/maintenance/maintenance.routes';
-import fuelLogsRouter from './modules/fuel-expenses/fuel-logs.routes';
-import expensesRouter from './modules/fuel-expenses/expenses.routes';
-import reportsRouter from './modules/reports/reports.routes';
+import cors from 'cors';
+import tripsRouter from './modules/trips/trips.routes.js';
+import maintenanceRouter from './modules/maintenance/maintenance.routes.js';
+import fuelLogsRouter from './modules/fuel-expenses/fuel-logs.routes.js';
+import expensesRouter from './modules/fuel-expenses/expenses.routes.js';
+import reportsRouter from './modules/reports/reports.routes.js';
+import { authRouter } from './modules/auth/auth.routes.js';
+import { vehiclesRouter } from './modules/vehicles/vehicles.routes.js';
+import { driversRouter } from './modules/drivers/drivers.routes.js';
+import { aiRouter } from './modules/ai/routes/aiRoutes.js';
 
 const app = express();
 app.use(express.json());
+// Enable CORS for frontend integration
+app.use(cors());
 
-// Register trips router under /api/trips
+// Mount Surya's core routes
+app.use('/api/auth', authRouter);
+app.use('/api/vehicles', vehiclesRouter);
+app.use('/api/drivers', driversRouter);
+
+// Mount Ashwin's operations routes
 app.use('/api/trips', tripsRouter);
-// Register maintenance router under /api/maintenance
 app.use('/api/maintenance', maintenanceRouter);
-// Register fuel logs router under /api/fuel-logs
 app.use('/api/fuel-logs', fuelLogsRouter);
-// Register expenses router under /api/expenses
 app.use('/api/expenses', expensesRouter);
-// Register reports router under /api/reports
 app.use('/api/reports', reportsRouter);
+
+// Mount Yuvan's AI routes
+app.use('/api/ai', aiRouter);
 
 export default app;

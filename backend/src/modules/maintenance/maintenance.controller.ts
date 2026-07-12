@@ -30,6 +30,17 @@ export function createMaintenanceController(service = maintenanceService) {
         next(err);
       }
     },
+    async list(req: any, res: any, next: any) {
+      try {
+        const logs = await prisma.maintenanceLog.findMany({
+          include: { vehicle: true },
+          orderBy: { createdAt: 'desc' }
+        });
+        res.status(200).json(logs);
+      } catch (err) {
+        next(err);
+      }
+    }
   };
 }
 
