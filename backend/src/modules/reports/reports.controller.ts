@@ -45,9 +45,13 @@ export function createReportsController(service = reportsService, intel = intell
 
     async exportCsv(req: any, res: any, next: any) {
       try {
-        const csv = await service.getOperationalCostCsv();
+        const kpis = await intel.getKpis();
+        const headers = Object.keys(kpis).join(',');
+        const values = Object.values(kpis).join(',');
+        const csv = `${headers}\r\n${values}`;
+        
         res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename="transitops-operational-cost.csv"');
+        res.setHeader('Content-Disposition', 'attachment; filename="transitops-kpis.csv"');
         res.status(200).send(csv);
       } catch (err) {
         next(err);

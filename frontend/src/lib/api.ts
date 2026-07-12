@@ -34,7 +34,11 @@ export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
 
   if (!response.ok) {
     const errorMessage = responseData?.error || responseData?.message || response.statusText;
-    throw new Error(errorMessage);
+    const err: any = new Error(errorMessage);
+    if (responseData?.violations) {
+      err.violations = responseData.violations;
+    }
+    throw err;
   }
 
   return responseData;

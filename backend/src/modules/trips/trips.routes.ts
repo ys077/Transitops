@@ -1,7 +1,10 @@
 import express from 'express';
 import { tripsController } from './trips.controller';
+import { verifyToken } from '../../middleware/auth';
 
 const router = express.Router();
+
+router.use(verifyToken);
 
 // POST /api/trips
 router.post('/', tripsController.create);

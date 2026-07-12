@@ -11,29 +11,29 @@ function createMockPrisma(overrides: any = {}) {
 
   const defaults = {
     vehicles: [
-      { id: 'v-healthy', status: 'AVAILABLE', maxLoadCapacityKg: 5000, odometerKm: 100 },
-      { id: 'v-shop', status: 'IN_SHOP', maxLoadCapacityKg: 5000, odometerKm: 200 },
+      { id: 'v-healthy', status: 'available', maxLoadCapacityKg: 5000, odometerKm: 100 },
+      { id: 'v-shop', status: 'in_shop', maxLoadCapacityKg: 5000, odometerKm: 200 },
     ],
     drivers: [
-      { id: 'd-valid', status: 'AVAILABLE', licenseExpiryDate: future },
-      { id: 'd-expired', status: 'AVAILABLE', licenseExpiryDate: past },
+      { id: 'd-valid', status: 'available', licenseExpiryDate: future },
+      { id: 'd-expired', status: 'available', licenseExpiryDate: past },
     ],
     trips: [
       {
-        id: 't-completed', status: 'COMPLETED', vehicleId: 'v-healthy', driverId: 'd-valid',
+        id: 't-completed', status: 'completed', vehicleId: 'v-healthy', driverId: 'd-valid',
         actualDistanceKm: 100, fuelConsumedLiters: 25, dispatchedAt: past, completedAt: now,
-        vehicle: { id: 'v-healthy', status: 'AVAILABLE' },
-        driver: { id: 'd-valid', status: 'AVAILABLE', licenseExpiryDate: future },
+        vehicle: { id: 'v-healthy', status: 'available' },
+        driver: { id: 'd-valid', status: 'available', licenseExpiryDate: future },
       },
       {
-        id: 't-long', status: 'DISPATCHED', vehicleId: 'v-healthy', driverId: 'd-valid',
+        id: 't-long', status: 'dispatched', vehicleId: 'v-healthy', driverId: 'd-valid',
         actualDistanceKm: null, fuelConsumedLiters: null, dispatchedAt: yesterday, completedAt: null,
-        vehicle: { id: 'v-healthy', status: 'ON_TRIP' },
-        driver: { id: 'd-valid', status: 'ON_TRIP', licenseExpiryDate: future },
+        vehicle: { id: 'v-healthy', status: 'on_trip' },
+        driver: { id: 'd-valid', status: 'on_trip', licenseExpiryDate: future },
       },
     ],
     maintenanceLogs: [
-      { id: 'm-active', vehicleId: 'v-shop', type: 'OIL_CHANGE', status: 'ACTIVE', vehicle: { id: 'v-shop', status: 'IN_SHOP' } },
+      { id: 'm-active', vehicleId: 'v-shop', type: 'OIL_CHANGE', status: 'active', vehicle: { id: 'v-shop', status: 'in_shop' } },
     ],
     fuelAgg: { _sum: { cost: 500 } },
     maintAgg: { _sum: { cost: 200 } },
@@ -219,8 +219,8 @@ describe('IntelligenceService', () => {
   test('healthy fleet returns HEALTHY operations health', async () => {
     const future = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
     const prisma = createFullMockPrisma({
-      vehicles: [{ id: 'v1', status: 'AVAILABLE', maxLoadCapacityKg: 5000, odometerKm: 100 }],
-      drivers: [{ id: 'd1', status: 'AVAILABLE', licenseExpiryDate: future }],
+      vehicles: [{ id: 'v1', status: 'available', maxLoadCapacityKg: 5000, odometerKm: 100 }],
+      drivers: [{ id: 'd1', status: 'available', licenseExpiryDate: future }],
       trips: [],
       maintenanceLogs: [],
     });

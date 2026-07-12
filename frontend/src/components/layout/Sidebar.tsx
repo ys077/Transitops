@@ -104,6 +104,7 @@ export function Sidebar() {
               Get instant AI insights on your fleet utilization and costs.
             </p>
             <button 
+              type="button"
               onClick={() => setIsCopilotOpen(true)} 
               className="mt-3 block text-center w-full rounded-md bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
             >

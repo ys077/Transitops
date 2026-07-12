@@ -3,7 +3,7 @@ export function createReportsService(prismaClient: any) {
     async getFuelEfficiencyReport() {
       const trips = await prismaClient.trip.findMany({
         where: {
-          status: 'COMPLETED',
+          status: 'completed',
           actualDistanceKm: { not: null },
           fuelConsumedLiters: { not: null },
         },
@@ -38,14 +38,14 @@ export function createReportsService(prismaClient: any) {
 
     async getFleetUtilizationReport() {
       const activeVehicles = await prismaClient.vehicle.findMany({
-        where: { status: { not: 'RETIRED' } },
+        where: { status: { not: 'retired' } },
         select: { id: true },
       });
       const totalActiveVehicles = activeVehicles.length;
 
       const usedVehicleIds = await prismaClient.trip.findMany({
         where: {
-          status: { not: 'DRAFT' },
+          status: { not: 'draft' },
           vehicleId: { in: activeVehicles.map((v: any) => v.id) },
         },
         distinct: ['vehicleId'],
@@ -110,9 +110,56 @@ export function createReportsService(prismaClient: any) {
     },
 
     async getRoiReport() {
+      // Placeholder revenue per vehicle since it's not tracked yet in the DB
+      const ESTIMATED_REVENUE_PER_VEHICLE = 50000;
+
+      const vehicles = await prismaClient.vehicle.findMany({ select: { id: true, acquisitionCost: true } });
+
+      const fuelLogs = await prismaClient.fuelLog.groupBy({
+        by: ['vehicleId'],
+        _sum: { cost: true },
+      });
+      const maints = await prismaClient.maintenanceLog.groupBy({
+        by: ['vehicleId'],
+        _sum: { cost: true },
+      });
+
+      const fuelByVehicle = fuelLogs.reduce((acc: Record<string, number>, entry: any) => {
+        acc[entry.vehicleId] = Number(entry._sum.cost ?? 0);
+        return acc;
+      }, {} as Record<string, number>);
+
+      const maintByVehicle = maints.reduce((acc: Record<string, number>, entry: any) => {
+        acc[entry.vehicleId] = Number(entry._sum.cost ?? 0);
+        return acc;
+      }, {} as Record<string, number>);
+
+      const vehiclesRoi = vehicles.map((vehicle: any) => {
+        const fuelCost = fuelByVehicle[vehicle.id] ?? 0;
+        const maintenanceCost = maintByVehicle[vehicle.id] ?? 0;
+        const acquisitionCost = Number(vehicle.acquisitionCost ?? 0);
+        
+        let roiPercentage = 0;
+        if (acquisitionCost > 0) {
+           roiPercentage = ((ESTIMATED_REVENUE_PER_VEHICLE - (maintenanceCost + fuelCost)) / acquisitionCost) * 100;
+        }
+
+        return {
+          vehicleId: vehicle.id,
+          roiPercentage: Math.round(roiPercentage * 100) / 100,
+          details: {
+            estimatedRevenue: ESTIMATED_REVENUE_PER_VEHICLE,
+            fuelCost,
+            maintenanceCost,
+            acquisitionCost,
+          }
+        };
+      });
+
       return {
-        available: false,
-        message: 'ROI is unavailable because return or revenue data is not available in the current operational schema.',
+        available: true,
+        message: 'Note: Estimated revenue is a placeholder config value ($50,000) as revenue tracking is not yet implemented.',
+        roiPerVehicle: vehiclesRoi,
       };
     },
 

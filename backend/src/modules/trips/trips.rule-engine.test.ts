@@ -2,12 +2,12 @@ import { describe, expect, test } from 'vitest';
 import { evaluateTripCreationRules } from './trips.rule-engine';
 
 const baseVehicle = {
-  status: 'AVAILABLE' as const,
+  status: 'available' as const,
   maxLoadCapacityKg: 1000,
 };
 
 const baseDriver = {
-  status: 'AVAILABLE' as const,
+  status: 'available' as const,
   licenseExpiryDate: new Date('2099-01-01'),
 };
 
@@ -25,8 +25,8 @@ describe('Trip creation rule engine', () => {
 
   test('returns cargo, vehicle, driver, and license violations together', () => {
     const violations = evaluateTripCreationRules({
-      vehicle: { ...baseVehicle, status: 'IN_SHOP' },
-      driver: { ...baseDriver, status: 'SUSPENDED', licenseExpiryDate: new Date('2000-01-01') },
+      vehicle: { ...baseVehicle, status: 'in_shop' },
+      driver: { ...baseDriver, status: 'suspended', licenseExpiryDate: new Date('2000-01-01') },
       cargoWeightKg: 1500,
       referenceDate: new Date('2026-01-01'),
     });
@@ -45,7 +45,7 @@ describe('Trip creation rule engine', () => {
 
   test('fails when vehicle status is ON_TRIP', () => {
     const violations = evaluateTripCreationRules({
-      vehicle: { ...baseVehicle, status: 'ON_TRIP' },
+      vehicle: { ...baseVehicle, status: 'on_trip' },
       driver: baseDriver,
       cargoWeightKg: 100,
       referenceDate: new Date('2026-01-01'),
@@ -59,7 +59,7 @@ describe('Trip creation rule engine', () => {
   test('fails when driver status is OFF_DUTY', () => {
     const violations = evaluateTripCreationRules({
       vehicle: baseVehicle,
-      driver: { ...baseDriver, status: 'OFF_DUTY' },
+      driver: { ...baseDriver, status: 'off_duty' },
       cargoWeightKg: 100,
       referenceDate: new Date('2026-01-01'),
     });

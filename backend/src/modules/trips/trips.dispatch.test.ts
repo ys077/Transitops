@@ -9,23 +9,24 @@ import {
 
 const baseTrip = {
   id: 'trip-1',
-  status: 'DRAFT',
+  status: 'draft',
   cargoWeightKg: 500,
   vehicleId: 'veh-1',
   driverId: 'drv-1',
   dispatchedAt: null,
-  vehicle: { id: 'veh-1', status: 'AVAILABLE', maxLoadCapacityKg: 1000 },
-  driver: { id: 'drv-1', status: 'AVAILABLE', licenseExpiryDate: new Date('2099-01-01') },
+  vehicle: { id: 'veh-1', status: 'available', maxLoadCapacityKg: 1000 },
+  driver: { id: 'drv-1', status: 'available', licenseExpiryDate: new Date('2099-01-01') },
 };
 
 function makeMockPrisma(overrides: any = {}) {
   const mockTx: any = {
     trip: {
       findUnique: vi.fn().mockResolvedValue(overrides.tripInside ?? baseTrip),
-      update: vi.fn().mockImplementation((args: any) => Promise.resolve({ ...baseTrip, status: 'DISPATCHED', dispatchedAt: new Date() })),
+      update: vi.fn().mockImplementation((args: any) => Promise.resolve({ ...baseTrip, status: 'dispatched', dispatchedAt: new Date() })),
     },
     vehicle: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
     driver: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+    auditLog: { create: vi.fn().mockResolvedValue({}) },
   };
 
   const mockPrisma: any = {
@@ -43,20 +44,21 @@ describe('Atomic dispatch', () => {
     const mockPrisma = makeMockPrisma();
     const svc = createTripsService(mockPrisma as any);
 
-    const res = await svc.dispatchTrip('trip-1');
+    const res = await svc.dispatchTrip('trip-1', 'user-1');
 
     expect(mockPrisma.$transaction).toHaveBeenCalled();
     expect(mockPrisma.__mockTx.vehicle.updateMany).toHaveBeenCalled();
     expect(mockPrisma.__mockTx.driver.updateMany).toHaveBeenCalled();
     expect(mockPrisma.__mockTx.trip.update).toHaveBeenCalled();
-    expect(res.status).toBe('DISPATCHED');
+    expect(mockPrisma.__mockTx.auditLog.create).toHaveBeenCalled();
+    expect(res.status).toBe('dispatched');
   });
 
   test('rejects non-DRAFT trip', async () => {
-    const mockPrisma = makeMockPrisma({ initialTrip: { ...baseTrip, status: 'DISPATCHED' } });
+    const mockPrisma = makeMockPrisma({ initialTrip: { ...baseTrip, status: 'dispatched' } });
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(InvalidTripTransitionError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(InvalidTripTransitionError);
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 
@@ -66,7 +68,7 @@ describe('Atomic dispatch', () => {
     mockPrisma.$transaction = vi.fn().mockImplementation(async (cb: any) => cb({ ...mockPrisma.__mockTx, vehicle: mockTxOverrides.vehicle }));
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
     expect(mockPrisma.__mockTx.trip.update).not.toHaveBeenCalled();
   });
 
@@ -78,7 +80,7 @@ describe('Atomic dispatch', () => {
     }));
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
     expect(mockPrisma.__mockTx.trip.update).not.toHaveBeenCalled();
   });
 
@@ -87,7 +89,7 @@ describe('Atomic dispatch', () => {
     const mockPrisma = makeMockPrisma({ initialTrip: expiredTrip, tripInside: expiredTrip });
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(TripRuleViolationError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(TripRuleViolationError);
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 
@@ -96,7 +98,7 @@ describe('Atomic dispatch', () => {
     const mockPrisma = makeMockPrisma({ initialTrip: badTrip, tripInside: badTrip });
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(TripRuleViolationError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(TripRuleViolationError);
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 
@@ -108,7 +110,7 @@ describe('Atomic dispatch', () => {
     }));
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
     expect(mockPrisma.__mockTx.trip.update).not.toHaveBeenCalled();
   });
 
@@ -120,7 +122,7 @@ describe('Atomic dispatch', () => {
     }));
     const svc = createTripsService(mockPrisma as any);
 
-    await expect(svc.dispatchTrip('trip-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
+    await expect(svc.dispatchTrip('trip-1', 'user-1')).rejects.toBeInstanceOf(ResourceUnavailableError);
     expect(mockPrisma.__mockTx.trip.update).not.toHaveBeenCalled();
   });
 });

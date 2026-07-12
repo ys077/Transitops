@@ -1,7 +1,7 @@
 import { RuleViolation } from './trips.errors';
 
-export type VehicleStatus = 'AVAILABLE' | 'ON_TRIP' | 'IN_SHOP' | 'RETIRED';
-export type DriverStatus = 'AVAILABLE' | 'ON_TRIP' | 'OFF_DUTY' | 'SUSPENDED';
+export type VehicleStatus = 'available' | 'on_trip' | 'in_shop' | 'retired';
+export type DriverStatus = 'available' | 'on_trip' | 'off_duty' | 'suspended';
 
 export interface TripCreationRuleInput {
   cargoWeightKg: number | string;
@@ -53,14 +53,14 @@ export function evaluateTripCreationRules(input: TripCreationRuleInput): RuleVio
     });
   }
 
-  if (vehicleStatus !== 'AVAILABLE') {
+  if (vehicleStatus !== 'available') {
     violations.push({
       code: 'VEHICLE_NOT_AVAILABLE',
       message: `Vehicle status is ${vehicleStatus}; only AVAILABLE vehicles may be assigned.`,
     });
   }
 
-  if (driverStatus !== 'AVAILABLE') {
+  if (driverStatus !== 'available') {
     violations.push({
       code: 'DRIVER_NOT_AVAILABLE',
       message: `Driver status is ${driverStatus}; only AVAILABLE drivers may be assigned.`,

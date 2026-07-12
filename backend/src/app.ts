@@ -31,3 +31,21 @@ app.use('/api/reports', reportsRouter);
 app.use('/api/ai', aiRouter);
 
 export default app;
+
+// ------ Global JSON error handler ------
+// Express recognises a 4-argument middleware as an error handler.
+// This catches anything thrown / passed to `next(err)` and replies with JSON
+// instead of the default HTML error page.
+app.use((err: any, _req: any, res: any, _next: any) => {
+  const status = typeof err.statusCode === 'number' ? err.statusCode : 500;
+  const message = err.message || 'Internal Server Error';
+  const payload: Record<string, any> = { success: false, error: message };
+
+  // If the error carries structured violation details, include them
+  if (err.violations) {
+    payload.violations = err.violations;
+  }
+
+  console.error(`[${status}]`, message);
+  res.status(status).json(payload);
+});

@@ -82,7 +82,7 @@ export function createIntelligenceService(prismaClient: any) {
   function computeVehicleFuelEfficiency(trips: any[]): Map<string, { totalDistanceKm: number; totalFuelLiters: number; efficiencyKmPerLiter: number }> {
     const map = new Map<string, { totalDistanceKm: number; totalFuelLiters: number; efficiencyKmPerLiter: number }>();
     for (const trip of trips) {
-      if (trip.status !== 'COMPLETED') continue;
+      if (trip.status !== 'completed') continue;
       const dist = trip.actualDistanceKm ?? 0;
       const fuel = trip.fuelConsumedLiters ?? 0;
       if (fuel <= 0) continue;
@@ -103,7 +103,7 @@ export function createIntelligenceService(prismaClient: any) {
 
     // Vehicle rules
     for (const v of data.vehicles) {
-      if (v.status === 'IN_SHOP') {
+      if (v.status === 'in_shop') {
         issues.push({
           type: 'VEHICLE_IN_SHOP',
           severity: 'WARNING',
@@ -117,7 +117,7 @@ export function createIntelligenceService(prismaClient: any) {
 
     // Maintenance rules
     for (const m of data.maintenanceLogs) {
-      if (m.status === 'ACTIVE') {
+      if (m.status === 'active') {
         issues.push({
           type: 'ACTIVE_MAINTENANCE',
           severity: 'WARNING',
@@ -161,7 +161,7 @@ export function createIntelligenceService(prismaClient: any) {
     // Long-running trip rules
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
     for (const t of data.trips) {
-      if (t.status === 'DISPATCHED' && t.dispatchedAt) {
+      if (t.status === 'dispatched' && t.dispatchedAt) {
         const elapsed = now.getTime() - new Date(t.dispatchedAt).getTime();
         if (elapsed > TWENTY_FOUR_HOURS) {
           issues.push({
@@ -198,14 +198,17 @@ export function createIntelligenceService(prismaClient: any) {
       const data = await fetchAllData();
 
       const totalVehicles = data.vehicles.length;
-      const availableVehicles = data.vehicles.filter((v: any) => v.status === 'AVAILABLE').length;
-      const vehiclesOnTrip = data.vehicles.filter((v: any) => v.status === 'ON_TRIP').length;
-      const vehiclesInShop = data.vehicles.filter((v: any) => v.status === 'IN_SHOP').length;
-      const activeTrips = data.trips.filter((t: any) => t.status === 'DISPATCHED').length;
-      const completedTrips = data.trips.filter((t: any) => t.status === 'COMPLETED').length;
-      const activeMaintenance = data.maintenanceLogs.filter((m: any) => m.status === 'ACTIVE').length;
+      const availableVehicles = data.vehicles.filter((v: any) => v.status === 'available').length;
+      const vehiclesOnTrip = data.vehicles.filter((v: any) => v.status === 'on_trip').length;
+      const vehiclesInShop = data.vehicles.filter((v: any) => v.status === 'in_shop').length;
+      const activeTrips = data.trips.filter((t: any) => t.status === 'dispatched').length;
+      const pendingTrips = data.trips.filter((t: any) => t.status === 'draft').length;
+      const completedTrips = data.trips.filter((t: any) => t.status === 'completed').length;
+      const activeMaintenance = data.maintenanceLogs.filter((m: any) => m.status === 'active').length;
+      
+      const driversOnDuty = data.drivers.filter((d: any) => d.status === 'on_trip' || d.status === 'available').length;
 
-      const nonRetired = data.vehicles.filter((v: any) => v.status !== 'RETIRED').length;
+      const nonRetired = data.vehicles.filter((v: any) => v.status !== 'retired').length;
       const fleetUtilizationPercentage = nonRetired === 0 ? 0 : (vehiclesOnTrip / nonRetired) * 100;
 
       // Total operational cost reuse: fuel log costs + maintenance costs
@@ -221,8 +224,10 @@ export function createIntelligenceService(prismaClient: any) {
         vehiclesOnTrip,
         vehiclesInShop,
         activeTrips,
+        pendingTrips,
         completedTrips,
         activeMaintenance,
+        driversOnDuty,
         fleetUtilizationPercentage: Math.round(fleetUtilizationPercentage * 100) / 100,
         totalOperationalCost,
       };
@@ -311,8 +316,8 @@ export function createIntelligenceService(prismaClient: any) {
         let riskScore = 0;
         const factors: string[] = [];
 
-        if (v.status === 'IN_SHOP') { riskScore += 50; factors.push('Vehicle is currently IN_SHOP'); }
-        const activeMaint = data.maintenanceLogs.filter((m: any) => m.vehicleId === v.id && m.status === 'ACTIVE');
+        if (v.status === 'in_shop') { riskScore += 50; factors.push('Vehicle is currently IN_SHOP'); }
+        const activeMaint = data.maintenanceLogs.filter((m: any) => m.vehicleId === v.id && m.status === 'active');
         if (activeMaint.length > 0) { riskScore += 35; factors.push('Vehicle has active maintenance'); }
         const eff = efficiencyMap.get(v.id);
         if (eff && eff.efficiencyKmPerLiter < 5) { riskScore += 20; factors.push(`Low fuel efficiency: ${eff.efficiencyKmPerLiter.toFixed(2)} km/L`); }
@@ -359,7 +364,7 @@ export function createIntelligenceService(prismaClient: any) {
 
       // TRIP_DELAY_RISK per dispatched trip
       for (const t of data.trips) {
-        if (t.status !== 'DISPATCHED') continue;
+        if (t.status !== 'dispatched') continue;
         let riskScore = 0;
         const factors: string[] = [];
 
@@ -524,7 +529,7 @@ export function createIntelligenceService(prismaClient: any) {
     let healthScore = 100;
 
     // RETIRED → score 0
-    if (vehicle.status === 'RETIRED') {
+    if (vehicle.status === 'retired') {
       return { vehicleId: vehicle.id, healthScore: 0, healthStatus: 'RED', issues };
     }
 
@@ -544,12 +549,12 @@ export function createIntelligenceService(prismaClient: any) {
     }
 
     // Additional deductions for active maintenance and IN_SHOP
-    const activeMaint = data.maintenanceLogs.filter((m: any) => m.vehicleId === vehicle.id && m.status === 'ACTIVE');
+    const activeMaint = data.maintenanceLogs.filter((m: any) => m.vehicleId === vehicle.id && m.status === 'active');
     if (activeMaint.length > 0 && !appliedDeductions.has(`ACTIVE_MAINT_DEDUCTION:${vehicle.id}`)) {
       healthScore -= 20;
       appliedDeductions.add(`ACTIVE_MAINT_DEDUCTION:${vehicle.id}`);
     }
-    if (vehicle.status === 'IN_SHOP' && !appliedDeductions.has(`IN_SHOP_DEDUCTION:${vehicle.id}`)) {
+    if (vehicle.status === 'in_shop' && !appliedDeductions.has(`IN_SHOP_DEDUCTION:${vehicle.id}`)) {
       healthScore -= 15;
       appliedDeductions.add(`IN_SHOP_DEDUCTION:${vehicle.id}`);
     }

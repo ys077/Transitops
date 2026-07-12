@@ -1,5 +1,5 @@
 import { beforeAll, afterAll, describe, expect, test } from 'vitest';
-import { PrismaClient } from '../../generated/prisma/client.js';
+import { PrismaClient } from '../../generated/prisma/index.js';
 import { createMaintenanceService } from './maintenance.service';
 
 const useRealDb = process.env.RUN_REAL_DB_TESTS === '1';
@@ -13,7 +13,7 @@ if (useRealDb) {
 
   describe('Maintenance creation real DB', () => {
     test('creates active maintenance and sets vehicle IN_SHOP', async () => {
-      const vehicle = await prisma.vehicle.create({ data: { status: 'AVAILABLE', maxLoadCapacityKg: 1000, odometerKm: 0 } });
+      const vehicle = await prisma.vehicle.create({ data: { status: 'available', maxLoadCapacityKg: 1000, odometerKm: 0 } });
 
       const maintenance = await service.createMaintenance(
         vehicle.id,
@@ -28,22 +28,22 @@ if (useRealDb) {
       const updatedVehicle = await prisma.vehicle.findUnique({ where: { id: vehicle.id } });
 
       expect(savedMaintenance).toBeTruthy();
-      expect(savedMaintenance!.status).toBe('ACTIVE');
+      expect(savedMaintenance!.status).toBe('active');
       expect(savedMaintenance!.vehicleId).toBe(vehicle.id);
-      expect(updatedVehicle!.status).toBe('IN_SHOP');
+      expect(updatedVehicle!.status).toBe('in_shop');
 
       await prisma.maintenanceLog.delete({ where: { id: maintenance.id } });
       await prisma.vehicle.delete({ where: { id: vehicle.id } });
     }, 20000);
 
     test('transaction rollback leaves no partial maintenance log', async () => {
-        const vehicle = await prisma.vehicle.create({ data: { status: 'AVAILABLE', maxLoadCapacityKg: 1000, odometerKm: 0 } });
+        const vehicle = await prisma.vehicle.create({ data: { status: 'available', maxLoadCapacityKg: 1000, odometerKm: 0 } });
 
         const badService = createMaintenanceService({
           $transaction: async (cb: any) => {
             return cb({
               vehicle: {
-                findUnique: async () => ({ id: vehicle.id, status: 'AVAILABLE' }),
+                findUnique: async () => ({ id: vehicle.id, status: 'available' }),
                 updateMany: async () => ({ count: 0 }),
               },
               maintenanceLog: {

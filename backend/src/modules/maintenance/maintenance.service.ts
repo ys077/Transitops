@@ -13,6 +13,7 @@ export function createMaintenanceService(prismaClient: any) {
       cost: number,
       scheduledDate: Date | string,
       odometerAtService: number,
+      performedBy: string,
       description?: string,
     ) {
       if (!vehicleId) {
@@ -41,16 +42,16 @@ export function createMaintenanceService(prismaClient: any) {
           throw new MaintenanceValidationError(`Vehicle ${vehicleId} not found`);
         }
 
-        if (vehicle.status === 'ON_TRIP') {
+        if (vehicle.status === 'on_trip') {
           throw new MaintenanceValidationError('Cannot create maintenance for a vehicle that is on trip.');
         }
 
-        if (vehicle.status === 'RETIRED') {
+        if (vehicle.status === 'retired') {
           throw new MaintenanceValidationError('Cannot create maintenance for a retired vehicle.');
         }
 
         const activeMaintenance = await tx.maintenanceLog.findFirst({
-          where: { vehicleId, status: 'ACTIVE' },
+          where: { vehicleId, status: 'active' },
         });
 
         if (activeMaintenance) {
@@ -65,24 +66,35 @@ export function createMaintenanceService(prismaClient: any) {
             cost: cost.toString(),
             scheduledDate: scheduled,
             odometerAtService,
-            status: 'ACTIVE',
+            status: 'active',
           },
         });
 
         const vehicleUpdate = await tx.vehicle.updateMany({
-          where: { id: vehicleId, status: 'AVAILABLE' },
-          data: { status: 'IN_SHOP' },
+          where: { id: vehicleId, status: 'available' },
+          data: { status: 'in_shop' },
         });
 
         if (vehicleUpdate.count !== 1) {
           throw new MaintenanceValidationError('Vehicle status could not be updated to IN_SHOP.');
         }
 
+        await tx.auditLog.create({
+          data: {
+            entityType: 'Vehicle',
+            entityId: vehicleId,
+            action: 'MAINTENANCE_STARTED',
+            oldValue: { status: vehicle.status },
+            newValue: { status: 'in_shop' },
+            performedBy,
+          },
+        });
+
         return maintenanceLog;
       });
     },
 
-    async closeMaintenance(id: string) {
+    async closeMaintenance(id: string, performedBy: string) {
       if (!id) {
         throw new MaintenanceValidationError('Maintenance id is required');
       }
@@ -97,14 +109,14 @@ export function createMaintenanceService(prismaClient: any) {
           throw new MaintenanceNotFoundError(`Maintenance ${id} not found`);
         }
 
-        if (maintenance.status !== 'ACTIVE') {
+        if (maintenance.status !== 'active') {
           throw new InvalidMaintenanceTransitionError('Only ACTIVE maintenance can be closed.');
         }
 
         const otherActive = await tx.maintenanceLog.findFirst({
           where: {
             vehicleId: maintenance.vehicleId,
-            status: 'ACTIVE',
+            status: 'active',
             NOT: { id },
           },
         });
@@ -112,17 +124,30 @@ export function createMaintenanceService(prismaClient: any) {
         const closedMaintenance = await tx.maintenanceLog.update({
           where: { id },
           data: {
-            status: 'CLOSED',
+            status: 'closed',
             closedDate: new Date(),
           },
         });
 
-        if (maintenance.vehicle.status !== 'RETIRED') {
-          const targetStatus = otherActive ? 'IN_SHOP' : 'AVAILABLE';
-          await tx.vehicle.update({
-            where: { id: maintenance.vehicleId },
-            data: { status: targetStatus },
-          });
+        if (maintenance.vehicle.status !== 'retired') {
+          const targetStatus = otherActive ? 'in_shop' : 'available';
+          if (maintenance.vehicle.status !== targetStatus) {
+            await tx.vehicle.update({
+              where: { id: maintenance.vehicleId },
+              data: { status: targetStatus },
+            });
+
+            await tx.auditLog.create({
+              data: {
+                entityType: 'Vehicle',
+                entityId: maintenance.vehicleId,
+                action: 'MAINTENANCE_CLOSED',
+                oldValue: { status: maintenance.vehicle.status },
+                newValue: { status: targetStatus },
+                performedBy,
+              },
+            });
+          }
         }
 
         return closedMaintenance;

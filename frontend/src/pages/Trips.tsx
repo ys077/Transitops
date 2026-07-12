@@ -35,9 +35,12 @@ export function Trips() {
   
   // Form states
   const [formData, setFormData] = useState({
+    source: '',
+    destination: '',
     vehicleId: '',
     driverId: '',
     cargoWeightKg: '',
+    plannedDistanceKm: '',
   });
 
   const [completeData, setCompleteData] = useState({
@@ -69,11 +72,24 @@ export function Trips() {
   const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await apiFetch('/trips', { data: formData });
+      await apiFetch('/trips', { data: {
+        source: formData.source,
+        destination: formData.destination,
+        vehicleId: formData.vehicleId,
+        driverId: formData.driverId,
+        cargoWeightKg: formData.cargoWeightKg ? Number(formData.cargoWeightKg) : 0,
+        plannedDistanceKm: formData.plannedDistanceKm ? Number(formData.plannedDistanceKm) : 0,
+      }});
       setIsAddModalOpen(false);
+      setFormData({ source: '', destination: '', vehicleId: '', driverId: '', cargoWeightKg: '', plannedDistanceKm: '' });
       fetchData();
     } catch (error: any) {
-      alert(error.message || 'Failed to create trip');
+      if (error.violations && Array.isArray(error.violations)) {
+        const violationMessages = error.violations.map((v: any) => `- ${v.message}`).join('\n');
+        alert(`${error.message}\n\nViolations:\n${violationMessages}`);
+      } else {
+        alert(error.message || 'Failed to create trip');
+      }
     }
   };
 
@@ -127,8 +143,8 @@ export function Trips() {
 
   const filteredTrips = trips.filter(t => {
     const matchesSearch = 
-      t.vehicle.registrationNumber.toLowerCase().includes(search.toLowerCase()) || 
-      t.driver.name.toLowerCase().includes(search.toLowerCase());
+      t.vehicle?.registrationNumber?.toLowerCase().includes(search.toLowerCase()) || 
+      t.driver?.name?.toLowerCase().includes(search.toLowerCase());
     const matchesTab = activeTab === 'all' || t.status === activeTab;
     return matchesSearch && matchesTab;
   });
@@ -198,12 +214,12 @@ export function Trips() {
                       <MapPin className="h-4 w-4" />
                     </div>
                     <div>
-                      <div>{trip.vehicle.registrationNumber}</div>
-                      <div className="text-xs text-muted-foreground">{trip.vehicle.nameModel}</div>
+                      <div>{trip.vehicle?.registrationNumber || 'Unknown Vehicle'}</div>
+                      <div className="text-xs text-muted-foreground">{trip.vehicle?.nameModel || ''}</div>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{trip.driver.name}</TableCell>
+                <TableCell>{trip.driver?.name || 'Unknown Driver'}</TableCell>
                 <TableCell>{trip.cargoWeightKg || '-'}</TableCell>
                 <TableCell>
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize
@@ -250,6 +266,26 @@ export function Trips() {
         title="Create New Trip"
       >
         <form onSubmit={handleCreateTrip} className="space-y-4 mt-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Source <span className="text-destructive">*</span></Label>
+              <Input 
+                required
+                placeholder="e.g. Warehouse A"
+                value={formData.source} 
+                onChange={e => setFormData({...formData, source: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Destination <span className="text-destructive">*</span></Label>
+              <Input 
+                required
+                placeholder="e.g. City B Depot"
+                value={formData.destination} 
+                onChange={e => setFormData({...formData, destination: e.target.value})} 
+              />
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Vehicle <span className="text-destructive">*</span></Label>
             <select
@@ -278,13 +314,25 @@ export function Trips() {
               ))}
             </select>
           </div>
-          <div className="space-y-2">
-            <Label>Cargo Weight (kg)</Label>
-            <Input 
-              type="number"
-              value={formData.cargoWeightKg} 
-              onChange={e => setFormData({...formData, cargoWeightKg: e.target.value})} 
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Cargo Weight (kg)</Label>
+              <Input 
+                type="number"
+                placeholder="0"
+                value={formData.cargoWeightKg} 
+                onChange={e => setFormData({...formData, cargoWeightKg: e.target.value})} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Planned Distance (km)</Label>
+              <Input 
+                type="number"
+                placeholder="0"
+                value={formData.plannedDistanceKm} 
+                onChange={e => setFormData({...formData, plannedDistanceKm: e.target.value})} 
+              />
+            </div>
           </div>
           
           <div className="flex justify-end gap-3 pt-4">

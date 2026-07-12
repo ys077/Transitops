@@ -104,21 +104,20 @@ describe('ReportsService', () => {
     expect(result.vehicles[0].operationalCost).toBe(100);
   });
 
-  test('ROI returns available false', async () => {
-    const prisma = {
-      vehicle: { findMany: async () => [] },
-      trip: { findMany: async () => [] },
-      fuelLog: { groupBy: async () => [] },
-      maintenanceLog: { groupBy: async () => [] },
+  test('ROI returns calculated ROI', async () => {
+    const tx = {
+      vehicle: { findMany: async () => [{ id: 'v1', acquisitionCost: 100000 }] },
+      fuelLog: { groupBy: async () => [{ vehicleId: 'v1', _sum: { cost: 5000 } }] },
+      maintenanceLog: { groupBy: async () => [{ vehicleId: 'v1', _sum: { cost: 10000 } }] },
     };
+    const prisma = { ...tx };
     const svc = createReportsService(prisma as any);
 
     const result = await svc.getRoiReport();
 
-    expect(result).toEqual({
-      available: false,
-      message: 'ROI is unavailable because return or revenue data is not available in the current operational schema.',
-    });
+    expect(result.available).toBe(true);
+    expect(result.roiPerVehicle).toHaveLength(1);
+    expect(result.roiPerVehicle[0].roiPercentage).toBe(35); // (50000 - 15000) / 100000 * 100
   });
 
   test('CSV contains expected header and values', async () => {
