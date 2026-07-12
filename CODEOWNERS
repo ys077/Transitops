@@ -2,15 +2,15 @@
 # Replace with actual GitHub usernames.
 
 /frontend/                              @kirubalanpm-gif
-/backend/src/modules/auth/              @ys077
-/backend/src/modules/vehicles/          @ys077
-/backend/src/modules/drivers/           @ys077
-/backend/src/prisma/                    @ys077
+/backend/src/modules/auth/              @surya2f11-source
+/backend/src/modules/vehicles/          @surya2f11-source
+/backend/src/modules/drivers/           @surya2f11-source
+/backend/src/prisma/                    @surya2f11-source
 /backend/src/modules/trips/             @ashwin4087-a11y
 /backend/src/modules/maintenance/       @ashwin4087-a11y
 /backend/src/modules/fuel-expenses/     @ashwin4087-a11y
 /backend/src/modules/reports/           @ashwin4087-a11y
-/backend/src/modules/ai/                @surya2f11-source
-/docker-compose.yml                     @surya2f11-source
-/.github/                               @surya2f11-source
-/docs/                                  @surya2f11-source
+/backend/src/modules/ai/                @ys077
+/docker-compose.yml                     @ys077
+/.github/                               @ys077
+/docs/                                  @ys077
