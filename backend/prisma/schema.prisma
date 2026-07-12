@@ -1,185 +1,115 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-}
-
-// ENUMS
-enum UserRole {
-  fleet_manager
-  driver
-  safety_officer
-  financial_analyst
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum VehicleStatus {
-  available
-  on_trip
-  in_shop
-  retired
+  AVAILABLE
+  ON_TRIP
+  IN_SHOP
+  RETIRED
 }
 
 enum DriverStatus {
-  available
-  on_trip
-  off_duty
-  suspended
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+  SUSPENDED
 }
 
 enum TripStatus {
-  draft
-  dispatched
-  completed
-  cancelled
-}
-
-enum MaintenanceStatus {
-  active
-  closed
-}
-
-// MODELS
-model User {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         UserRole
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  drivers      Driver[]
-  createdTrips Trip[]     @relation("TripCreator")
-  auditLogs    AuditLog[]
+  DRAFT
+  DISPATCHED
+  COMPLETED
+  CANCELLED
 }
 
 model Vehicle {
-  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  registrationNumber String        @unique
-  nameModel          String?
-  type               String?
-  maxLoadCapacityKg  Decimal?      @db.Decimal(10, 2)
-  odometerKm         Decimal?      @db.Decimal(10, 2)
-  acquisitionCost    Decimal?      @db.Decimal(10, 2)
-  status             VehicleStatus @default(available)
-  region             String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  status            VehicleStatus @default(AVAILABLE)
+  maxLoadCapacityKg Int
+  odometerKm        Int?
 
-  trips              Trip[]
-  maintenanceLogs    MaintenanceLog[]
-  fuelLogs           FuelLog[]
-  expenses           Expense[]
-
-  @@index([status])
+  trips           Trip[]
+  maintenanceLogs MaintenanceLog[]
+  fuelLogs        FuelLog[]
+  expenses        Expense[]
 }
 
 model Driver {
-  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String?      @db.Uuid
-  name              String
-  licenseNumber     String       @unique
-  licenseCategory   String?
-  licenseExpiryDate DateTime     @db.Date
-  contactNumber     String?
-  safetyScore       Int          @default(100)
-  status            DriverStatus @default(available)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  status            DriverStatus @default(AVAILABLE)
+  licenseExpiryDate DateTime
 
-  user              User?        @relation(fields: [userId], references: [id])
-  trips             Trip[]
-
-  @@index([status, licenseExpiryDate])
+  trips Trip[]
 }
 
-model Trip {
-  id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  source             String
-  destination        String
-  vehicleId          String     @db.Uuid
-  driverId           String     @db.Uuid
-  cargoWeightKg      Decimal?   @db.Decimal(10, 2)
-  plannedDistanceKm  Decimal?   @db.Decimal(10, 2)
-  actualDistanceKm   Decimal?   @db.Decimal(10, 2)
-  fuelConsumedLiters Decimal?   @db.Decimal(10, 2)
-  status             TripStatus @default(draft)
-  dispatchedAt       DateTime?
-  completedAt        DateTime?
-  aiRecommended      Boolean    @default(false)
-  createdBy          String     @db.Uuid
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-
-  vehicle            Vehicle    @relation(fields: [vehicleId], references: [id])
-  driver             Driver     @relation(fields: [driverId], references: [id])
-  creator            User       @relation("TripCreator", fields: [createdBy], references: [id])
-  fuelLogs           FuelLog[]
-  expenses           Expense[]
-
-  @@index([status])
+enum MaintenanceStatus {
+  ACTIVE
+  CLOSED
 }
 
 model MaintenanceLog {
-  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vehicleId         String            @db.Uuid
+  id                String            @id @default(cuid())
+  vehicleId         String
   type              String
   description       String?
-  cost              Decimal?          @db.Decimal(10, 2)
-  status            MaintenanceStatus @default(active)
-  scheduledDate     DateTime          @db.Date
-  closedDate        DateTime?         @db.Date
-  odometerAtService Decimal?          @db.Decimal(10, 2)
+  cost              Decimal
+  status            MaintenanceStatus @default(ACTIVE)
+  scheduledDate     DateTime
+  closedDate        DateTime?
+  odometerAtService Int
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  vehicle           Vehicle           @relation(fields: [vehicleId], references: [id])
-
-  @@index([vehicleId, status])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
 }
 
 model FuelLog {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vehicleId String   @db.Uuid
-  tripId    String?  @db.Uuid
-  liters    Decimal  @db.Decimal(10, 2)
-  cost      Decimal  @db.Decimal(10, 2)
-  date      DateTime @db.Date
+  id        String   @id @default(cuid())
+  vehicleId String
+  tripId    String?
+  liters    Float
+  cost      Float
+  date      DateTime
   createdAt DateTime @default(now())
 
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
-  trip      Trip?    @relation(fields: [tripId], references: [id])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id])
+  trip    Trip?   @relation(fields: [tripId], references: [id])
 }
 
 model Expense {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  vehicleId String?  @db.Uuid
-  tripId    String?  @db.Uuid
+  id        String   @id @default(cuid())
+  vehicleId String?
+  tripId    String?
   category  String
-  amount    Decimal  @db.Decimal(10, 2)
-  date      DateTime @db.Date
+  amount    Float
+  date      DateTime
   notes     String?
   createdAt DateTime @default(now())
 
-  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
-  trip      Trip?    @relation(fields: [tripId], references: [id])
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
+  trip    Trip?    @relation(fields: [tripId], references: [id])
 }
 
-model AuditLog {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  entityType  String
-  entityId    String   @db.Uuid
-  action      String
-  oldValue    Json?
-  newValue    Json?
-  performedBy String   @db.Uuid
-  createdAt   DateTime @default(now())
+model Trip {
+  id                 String     @id @default(cuid())
+  status             TripStatus @default(DRAFT)
+  cargoWeightKg      Int
+  vehicleId          String
+  driverId           String
+  dispatchedAt       DateTime?
+  actualDistanceKm   Int?
+  fuelConsumedLiters Float?
+  completedAt        DateTime?
 
-  user        User     @relation(fields: [performedBy], references: [id])
+  vehicle  Vehicle   @relation(fields: [vehicleId], references: [id])
+  driver   Driver    @relation(fields: [driverId], references: [id])
+  fuelLogs FuelLog[]
+  expenses Expense[]
 }

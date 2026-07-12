@@ -22,7 +22,7 @@ try {
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error('❌ Invalid or missing environment variables:');
-    error.errors.forEach((err) => {
+    (error as z.ZodError).errors.forEach((err: any) => {
       console.error(`  - ${err.path.join('.')}: ${err.message}`);
     });
     // Throw a clear error and exit so it doesn't fail silently later
