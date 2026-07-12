@@ -49,3 +49,4 @@ router.get('/sustainability', intelligenceController.sustainability);
 router.post('/recommendations/:type/acknowledge', intelligenceController.acknowledgeRecommendation);
 
 export default router;
+

@@ -1,9 +1,11 @@
 import { createReportsService } from './reports.service';
+import { createIntelligenceService } from './intelligence.service';
 import { prisma } from '../../prisma/client';
 
 const reportsService = createReportsService(prisma);
+const intelligenceService = createIntelligenceService(prisma);
 
-export function createReportsController(service = reportsService) {
+export function createReportsController(service = reportsService, intel = intelligenceService) {
   return {
     async fuelEfficiency(req: any, res: any, next: any) {
       try {
@@ -51,7 +53,46 @@ export function createReportsController(service = reportsService) {
         next(err);
       }
     },
+
+    // ── Operations Intelligence Layer ──────────────────────────────
+
+    async kpis(req: any, res: any, next: any) {
+      try {
+        const report = await intel.getKpis();
+        res.status(200).json(report);
+      } catch (err) {
+        next(err);
+      }
+    },
+
+    async attention(req: any, res: any, next: any) {
+      try {
+        const report = await intel.buildOperationsAttentionReport();
+        res.status(200).json(report);
+      } catch (err) {
+        next(err);
+      }
+    },
+
+    async operationsHealth(req: any, res: any, next: any) {
+      try {
+        const report = await intel.getOperationsHealth();
+        res.status(200).json(report);
+      } catch (err) {
+        next(err);
+      }
+    },
+
+    async recommendations(req: any, res: any, next: any) {
+      try {
+        const report = await intel.getRecommendations();
+        res.status(200).json(report);
+      } catch (err) {
+        next(err);
+      }
+    },
   };
 }
 
 export const reportsController = createReportsController();
+

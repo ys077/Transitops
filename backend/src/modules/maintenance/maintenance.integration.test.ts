@@ -1,11 +1,11 @@
 import { beforeAll, afterAll, describe, expect, test } from 'vitest';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma/client.js';
 import { createMaintenanceService } from './maintenance.service';
 
 const useRealDb = process.env.RUN_REAL_DB_TESTS === '1';
 
 if (useRealDb) {
-  const prisma = new PrismaClient({ datasources: { db: { url: process.env.DIRECT_URL } } });
+  const prisma = new (PrismaClient as any)();
   const service = createMaintenanceService(prisma as any);
 
   beforeAll(async () => { await prisma.$connect(); });
