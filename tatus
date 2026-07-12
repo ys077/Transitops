@@ -1,0 +1,142 @@
+[1mdiff --git a/.agents/skills/supabase-postgres-best-practices/CHANGELOG.md b/.agents/skills/supabase-postgres-best-practices/CHANGELOG.md[m
+[1mdeleted file mode 100644[m
+[1mindex aea3200..0000000[m
+[1m--- a/.agents/skills/supabase-postgres-best-practices/CHANGELOG.md[m
+[1m+++ /dev/null[m
+[36m@@ -1,43 +0,0 @@[m
+[31m-# Changelog[m
+[31m-[m
+[31m-## [1.4.0](https://github.com/supabase/agent-skills/compare/v1.3.0...v1.4.0) (2026-07-10)[m
+[31m-[m
+[31m-[m
+[31m-### Features[m
+[31m-[m
+[31m-* add schema-constraints reference for safe migration patterns ([#30](https://github.com/supabase/agent-skills/issues/30)) ([9b236f3](https://github.com/supabase/agent-skills/commit/9b236f3ebd65d76a2c570f19931353da9c858d5a))[m
+[31m-* using Supabase agent skills ([#12](https://github.com/supabase/agent-skills/issues/12)) ([7c2e389](https://github.com/supabase/agent-skills/commit/7c2e3894fddfde8eb6c77d2a8921904543b9be7a))[m
+[31m-[m
+[31m-[m
+[31m-### Bug Fixes[m
+[31m-[m
+[31m-* correct broken reference link in postgres best practices skill ([#58](https://github.com/supabase/agent-skills/issues/58)) ([f4e2277](https://github.com/supabase/agent-skills/commit/f4e22777fd8573537297b568c16e5a45a25927da))[m
+[31m-* cover SECURITY DEFINER, auth.role() deprecation, and BOLA in security checklist ([#85](https://github.com/supabase/agent-skills/issues/85)) ([133f43e](https://github.com/supabase/agent-skills/commit/133f43e8c2ffc48823ff0630c692cabecea3e3a3))[m
+[31m-[m
+[31m-## [1.3.0](https://github.com/supabase/agent-skills/compare/v1.2.0...v1.3.0) (2026-06-05)[m
+[31m-[m
+[31m-[m
+[31m-### Features[m
+[31m-[m
+[31m-* add schema-constraints reference for safe migration patterns ([#30](https://github.com/supabase/agent-skills/issues/30)) ([9b236f3](https://github.com/supabase/agent-skills/commit/9b236f3ebd65d76a2c570f19931353da9c858d5a))[m
+[31m-* using Supabase agent skills ([#12](https://github.com/supabase/agent-skills/issues/12)) ([7c2e389](https://github.com/supabase/agent-skills/commit/7c2e3894fddfde8eb6c77d2a8921904543b9be7a))[m
+[31m-[m
+[31m-[m
+[31m-### Bug Fixes[m
+[31m-[m
+[31m-* correct broken reference link in postgres best practices skill ([#58](https://github.com/supabase/agent-skills/issues/58)) ([f4e2277](https://github.com/supabase/agent-skills/commit/f4e22777fd8573537297b568c16e5a45a25927da))[m
+[31m-* cover SECURITY DEFINER, auth.role() deprecation, and BOLA in security checklist ([#85](https://github.com/supabase/agent-skills/issues/85)) ([133f43e](https://github.com/supabase/agent-skills/commit/133f43e8c2ffc48823ff0630c692cabecea3e3a3))[m
+[31m-[m
+[31m-## [1.2.0](https://github.com/supabase/agent-skills/compare/v1.1.1...v1.2.0) (2026-06-02)[m
+[31m-[m
+[31m-[m
+[31m-### Features[m
+[31m-[m
+[31m-* add schema-constraints reference for safe migration patterns ([#30](https://github.com/supabase/agent-skills/issues/30)) ([9b236f3](https://github.com/supabase/agent-skills/commit/9b236f3ebd65d76a2c570f19931353da9c858d5a))[m
+[31m-* using Supabase agent skills ([#12](https://github.com/supabase/agent-skills/issues/12)) ([7c2e389](https://github.com/supabase/agent-skills/commit/7c2e3894fddfde8eb6c77d2a8921904543b9be7a))[m
+[31m-[m
+[31m-[m
+[31m-### Bug Fixes[m
+[31m-[m
+[31m-* correct broken reference link in postgres best practices skill ([#58](https://github.com/supabase/agent-skills/issues/58)) ([f4e2277](https://github.com/supabase/agent-skills/commit/f4e22777fd8573537297b568c16e5a45a25927da))[m
+[31m-* cover SECURITY DEFINER, auth.role() deprecation, and BOLA in security checklist ([#85](https://github.com/supabase/agent-skills/issues/85)) ([133f43e](https://github.com/supabase/agent-skills/commit/133f43e8c2ffc48823ff0630c692cabecea3e3a3))[m
+[1mdiff --git a/.agents/skills/supabase-postgres-best-practices/SKILL.md b/.agents/skills/supabase-postgres-best-practices/SKILL.md[m
+[1mdeleted file mode 100644[m
+[1mindex d9ef194..0000000[m
+[1m--- a/.agents/skills/supabase-postgres-best-practices/SKILL.md[m
+[1m+++ /dev/null[m
+[36m@@ -1,64 +0,0 @@[m
+[31m----[m
+[31m-name: supabase-postgres-best-practices[m
+[31m-description: Postgres performance optimization and best practices from Supabase. Use this skill when writing, reviewing, or optimizing Postgres queries, schema designs, or database configurations.[m
+[31m-license: MIT[m
+[31m-metadata:[m
+[31m-  author: supabase[m
+[31m-  version: "1.1.1"[m
+[31m-  organization: Supabase[m
+[31m-  date: January 2026[m
+[31m-  abstract: Comprehensive Postgres performance optimization guide for developers using Supabase and Postgres. Contains performance rules across 8 categories, prioritized by impact from critical (query performance, connection management) to incremental (advanced features). Each rule includes detailed explanations, incorrect vs. correct SQL examples, query plan analysis, and specific performance metrics to guide automated optimization and code generation.[m
+[31m----[m
+[31m-[m
+[31m-# Supabase Postgres Best Practices[m
+[31m-[m
+[31m-Comprehensive performance optimization guide for Postgres, maintained by Supabase. Contains rules across 8 categories, prioritized by impact to guide automated query optimization and schema design.[m
+[31m-[m
+[31m-## When to Apply[m
+[31m-[m
+[31m-Reference these guidelines when:[m
+[31m-- Writing SQL queries or designing schemas[m
+[31m-- Implementing indexes or query optimization[m
+[31m-- Reviewing database performance issues[m
+[31m-- Configuring connection pooling or scaling[m
+[31m-- Optimizing for Postgres-specific features[m
+[31m-- Working with Row-Level Security (RLS)[m
+[31m-[m
+[31m-## Rule Categories by Priority[m
+[31m-[m
+[31m-| Priority | Category | Impact | Prefix |[m
+[31m-|----------|----------|--------|--------|[m
+[31m-| 1 | Query Performance | CRITICAL | `query-` |[m
+[31m-| 2 | Connection Management | CRITICAL | `conn-` |[m
+[31m-| 3 | Security & RLS | CRITICAL | `security-` |[m
+[31m-| 4 | Schema Design | HIGH | `schema-` |[m
+[31m-| 5 | Concurrency & Locking | MEDIUM-HIGH | `lock-` |[m
+[31m-| 6 | Data Access Patterns | MEDIUM | `data-` |[m
+[31m-| 7 | Monitoring & Diagnostics | LOW-MEDIUM | `monitor-` |[m
+[31m-| 8 | Advanced Features | LOW | `advanced-` |[m
+[31m-[m
+[31m-## How to Use[m
+[31m-[m
+[31m-Read individual rule files for detailed explanations and SQL examples:[m
+[31m-[m
+[31m-```[m
+[31m-references/query-missing-indexes.md[m
+[31m-references/query-partial-indexes.md[m
+[31m-references/_sections.md[m
+[31m-```[m
+[31m-[m
+[31m-Each rule file contains:[m
+[31m-- Brief explanation of why it matters[m
+[31m-- Incorrect SQL example with explanation[m
+[31m-- Correct SQL example with explanation[m
+[31m-- Optional EXPLAIN output or metrics[m
+[31m-- Additional context and references[m
+[31m-- Supabase-specific notes (when applicable)[m
+[31m-[m
+[31m-## References[m
+[31m-[m
+[31m-- https://www.postgresql.org/docs/current/[m
+[31m-- https://supabase.com/docs[m
+[31m-- https://wiki.postgresql.org/wiki/Performance_Optimization[m
+[31m-- https://supabase.com/docs/guides/database/overview[m
+[31m-- https://supabase.com/docs/guides/auth/row-level-security[m
+[1mdiff --git a/.agents/skills/supabase-postgres-best-practices/references/_contributing.md b/.agents/skills/supabase-postgres-best-practices/references/_contributing.md[m
+[1mdeleted file mode 100644[m
+[1mindex 1c055af..0000000[m
+[1m--- a/.agents/skills/supabase-postgres-best-practices/references/_contributing.md[m
+[1m+++ /dev/null[m
+[36m@@ -1,170 +0,0 @@[m
+[31m-# Writing Guidelines for Postgres References[m
+[31m-[m
+[31m-This document provides guidelines for creating effective Postgres best[m
+[31m-practice references that work well with AI agents and LLMs.[m
+[31m-[m
+[31m-## Key Principles[m
+[31m-[m
+[31m-### 1. Concrete Transformation Patterns[m
+[31m-[m
+[31m-Show exact SQL rewrites. Avoid philosophical advice.[m
+[31m-[m
+[31m-**Good:** "Use `WHERE id = ANY(ARRAY[...])` instead of[m
+[31m-`WHERE id IN (SELECT ...)`" **Bad:** "Design good schemas"[m
+[31m-[m
+[31m-### 2. Error-First Structure[m
+[31m-[m
+[31m-Always

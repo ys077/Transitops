@@ -1,4 +1,4 @@
-import { prisma } from '../../lib/prisma.js';
+import { prisma } from '../../../lib/prisma.js';
 
 // Configurable service interval defaults
 const DEFAULT_SERVICE_INTERVAL_KM = 5000;

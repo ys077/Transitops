@@ -30,7 +30,7 @@ export function createTripsController(service = tripsService) {
 
     async getById(req: any, res: any, next: any) {
       try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         const trip = await service.getTripById(id);
         res.status(200).json(trip);
       } catch (err) {
@@ -40,7 +40,7 @@ export function createTripsController(service = tripsService) {
 
     async dispatch(req: any, res: any, next: any) {
       try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         const updated = await service.dispatchTrip(id);
         res.status(200).json(updated);
       } catch (err) {
@@ -49,7 +49,7 @@ export function createTripsController(service = tripsService) {
     },
     async complete(req: any, res: any, next: any) {
       try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         const { finalOdometerKm, fuelConsumedLiters } = req.body;
         const finalKm = Number(finalOdometerKm);
         if (Number.isNaN(finalKm)) throw new Error('finalOdometerKm must be a number');
@@ -65,7 +65,7 @@ export function createTripsController(service = tripsService) {
     },
     async cancel(req: any, res: any, next: any) {
       try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         const updated = await service.cancelTrip(id);
         res.status(200).json(updated);
       } catch (err) {

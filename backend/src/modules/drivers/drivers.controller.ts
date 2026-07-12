@@ -17,7 +17,7 @@ export const getDrivers = async (req: Request, res: Response) => {
 
 export const getDriverById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const driver = await prisma.driver.findUnique({ where: { id } });
 
     if (!driver) {
@@ -50,7 +50,7 @@ export const createDriver = async (req: Request, res: Response) => {
 
 export const updateDriver = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const data = req.body;
 
     if (data.licenseExpiryDate) {
@@ -74,7 +74,7 @@ export const updateDriver = async (req: Request, res: Response) => {
 
 export const deleteDriver = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.driver.delete({ where: { id } });
     res.json({ success: true, message: 'Driver deleted' });
   } catch (error: any) {

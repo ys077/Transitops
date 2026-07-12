@@ -1,4 +1,4 @@
-import prisma from '../../lib/prisma.js';
+import prisma from '../../../lib/prisma.js';
 import { callLLM } from './llmClient.js';
 
 export async function generateExecutiveSummary() {

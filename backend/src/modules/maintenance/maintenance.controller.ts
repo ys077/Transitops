@@ -23,7 +23,7 @@ export function createMaintenanceController(service = maintenanceService) {
     },
     async close(req: any, res: any, next: any) {
       try {
-        const { id } = req.params;
+        const id = req.params.id as string;
         const maintenanceLog = await service.closeMaintenance(id);
         res.status(200).json(maintenanceLog);
       } catch (err) {
