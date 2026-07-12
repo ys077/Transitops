@@ -1,16 +1,16 @@
 # GitHub will auto-request the right reviewer per folder.
 # Replace with actual GitHub usernames.
 
-/frontend/                              @ashwin-github
-/backend/src/modules/auth/              @yuvan-github
-/backend/src/modules/vehicles/          @yuvan-github
-/backend/src/modules/drivers/           @yuvan-github
-/backend/src/prisma/                    @yuvan-github
-/backend/src/modules/trips/             @kirubalan-github
-/backend/src/modules/maintenance/       @kirubalan-github
-/backend/src/modules/fuel-expenses/     @kirubalan-github
-/backend/src/modules/reports/           @kirubalan-github
-/backend/src/modules/ai/                @surya-github
-/docker-compose.yml                     @surya-github
-/.github/                               @surya-github
-/docs/                                  @surya-github
+/frontend/                              @kirubalanpm-gif
+/backend/src/modules/auth/              @ys077
+/backend/src/modules/vehicles/          @ys077
+/backend/src/modules/drivers/           @ys077
+/backend/src/prisma/                    @ys077
+/backend/src/modules/trips/             @ashwin4087-a11y
+/backend/src/modules/maintenance/       @ashwin4087-a11y
+/backend/src/modules/fuel-expenses/     @ashwin4087-a11y
+/backend/src/modules/reports/           @ashwin4087-a11y
+/backend/src/modules/ai/                @surya2f11-source
+/docker-compose.yml                     @surya2f11-source
+/.github/                               @surya2f11-source
+/docs/                                  @surya2f11-source

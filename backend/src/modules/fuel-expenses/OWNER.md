@@ -1,5 +1,5 @@
 # Module: Fuel & Expenses
-**Owner: Kirubalan — Backend Operations**
+**Owner: Ashwin — Backend Operations**
 
 ## Scope
 - POST /api/fuel-logs, POST /api/expenses

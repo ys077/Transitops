@@ -1,5 +1,5 @@
 # Frontend
-**Owner: Ashwin — Frontend**
+**Owner: Kirubalan — Frontend**
 
 ## Scope
 Everything under frontend/ — pages, components, hooks, state, styling.

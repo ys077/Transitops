@@ -1,5 +1,5 @@
 # Module: Trips (Rule Engine core)
-**Owner: Kirubalan — Backend Operations**
+**Owner: Ashwin — Backend Operations**
 
 ## Scope
 - POST /api/trips, /:id/dispatch, /:id/complete, /:id/cancel

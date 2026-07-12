@@ -5,8 +5,8 @@
 | Member | Role | Owns (folders) |
 |---|---|---|
 | **Yuvan** | Backend Core | `backend/src/modules/auth/`, `/vehicles/`, `/drivers/`, `backend/src/prisma/` |
-| **Kirubalan** | Backend Operations | `backend/src/modules/trips/`, `/maintenance/`, `/fuel-expenses/`, `/reports/` |
-| **Ashwin** | Frontend | `frontend/` (entire folder) |
+| **Ashwin** | Backend Operations | `backend/src/modules/trips/`, `/maintenance/`, `/fuel-expenses/`, `/reports/` |
+| **Kirubalan** | Frontend | `frontend/` (entire folder) |
 | **Surya** | AI + DevOps | `backend/src/modules/ai/`, `docker-compose.yml`, `.github/`, `docs/` |
 
 Every module folder has an `OWNER.md` inside it stating exactly what it owns and what it exports for others to use. **Read the OWNER.md of any module before importing from it.**
@@ -22,8 +22,8 @@ If you find yourself editing a file inside someone else's module folder, stop �
 ```
 main
  ├─ yuvan/backend-core
- ├─ kirubalan/backend-ops
- ├─ ashwin/frontend
+ ├─ ashwin/backend-ops
+ ├─ kirubalan/frontend
  └─ surya/ai-devops
 ```
 
@@ -53,7 +53,7 @@ main
 ```bash
 git clone <repo-url>
 git checkout -b yuvan/backend-core   # (or m2/, m3/, m4/ — your branch)
-cd backend && npm install         # Yuvan, Kirubalan, Surya
-cd frontend && npm install        # Ashwin
+cd backend && npm install         # Yuvan, Ashwin, Surya
+cd frontend && npm install        # Kirubalan
 docker-compose up -d postgres     # spin up local DB
 ```
