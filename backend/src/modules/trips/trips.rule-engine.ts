@@ -44,7 +44,7 @@ export function evaluateTripCreationRules(input: TripCreationRuleInput): RuleVio
     throw new Error('Invalid numeric values supplied to the trip rule engine.');
   }
 
-  const violations: TripRuleViolation[] = [];
+  const violations: RuleViolation[] = [];
 
   if (cargoWeightKg > maxLoadCapacityKg) {
     violations.push({

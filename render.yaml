@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: transitops-backend
+    runtime: node
+    region: singapore  # closest to AP-Northeast pooler
+    plan: free
+    buildCommand: cd backend && npm ci && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  # set manually in Render dashboard
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
